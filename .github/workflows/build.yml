@@ -1,7 +1,7 @@
 name: build-and-push
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]   # если у вас другая ветка — поменяйте тут
   workflow_dispatch:
 
 jobs:
@@ -18,9 +18,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ toLower(github.repository) }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
